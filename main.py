@@ -1,6 +1,5 @@
 # -*- coding:UTF-8 -*-
-import requests, random, time, collections, window.py
-from lxml import etree
+import requests, random, time, collections
 from retrying import retry
 
 
@@ -77,54 +76,46 @@ class Amazon(object):
         return ''.join(url)
 
     def go(self):
-        while True:
-            url = self.generate_url()
-            #print('url: ' + url)
-            response = self.parse_url(url)
-            if response == None:
-                print('parse url error')
-                return
-
-            self.dirc = eval(response.text)
-            for subDirc in self.dirc['list']:
-                period = subDirc['date']
-                result = subDirc['result']
-                self.result_dirc[period] = result
-                cnt = len(self.result_dirc)
-                if cnt == self.period_count:
-                    break
-
-            self.dig_1.clear()
-            self.dig_2.clear()
-            self.dig_3.clear()
-            self.result.clear()
-            total = []
-            for (period,result) in self.result_dirc.items():
-                dig_1 = result.split(',')[4]
-                dig_2 = result.split(',')[3]
-                dig_3 = result.split(',')[2]
-                self.dig_1.append(int(dig_1))
-                self.dig_2.append(int(dig_2))
-                self.dig_3.append(int(dig_3))
-                total.append(int(dig_1))
-                total.append(int(dig_2))
-                total.append(int(dig_3))
-
-            #self.dig_1.reverse()
-            #self.dig_2.reverse()
-            #self.dig_3.reverse()
-
-            print(total)
-            target = collections.Counter(total).most_common(1)[0][0]
-
-            for i in range(0,10):
-                if i != target:
-                    self.result.append(i)
-
-            print(self.result)
-            time.sleep(5)
+        url = self.generate_url()
+        #print('url: ' + url)
+        response = self.parse_url(url)
+        if response == None:
+            print('parse url error')
+            return
+        self.dirc = eval(response.text)
+        for subDirc in self.dirc['list']:
+            period = subDirc['date']
+            result = subDirc['result']
+            self.result_dirc[period] = result
+            cnt = len(self.result_dirc)
+            if cnt == self.period_count:
+                break
+        self.dig_1.clear()
+        self.dig_2.clear()
+        self.dig_3.clear()
+        self.result.clear()
+        total = []
+        for (period,result) in self.result_dirc.items():
+            dig_1 = result.split(',')[4]
+            dig_2 = result.split(',')[3]
+            dig_3 = result.split(',')[2]
+            self.dig_1.append(int(dig_1))
+            self.dig_2.append(int(dig_2))
+            self.dig_3.append(int(dig_3))
+            total.append(int(dig_1))
+            total.append(int(dig_2))
+            total.append(int(dig_3))
+        #self.dig_1.reverse()
+        #self.dig_2.reverse()
+        #self.dig_3.reverse()
+        print(total)
+        target = collections.Counter(total).most_common(1)[0][0]
+        for i in range(0,10):
+            if i != target:
+                self.result.append(i)
+        print(self.result)
+        return result
 
 if __name__ == '__main__':
-    window = window.myWidget()
-    #count = 5
-    #Amazon(count).go()
+    count = 5
+    Amazon(count).go()

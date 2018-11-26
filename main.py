@@ -1,5 +1,5 @@
 # -*- coding:UTF-8 -*-
-import requests, random, time, collections
+import requests, random, time, collections, sys
 from retrying import retry
 
 
@@ -34,7 +34,7 @@ def randHeader():
         'Accept': head_accept[0],
         'Accept-Language': head_accept_language[1],
         'User-Agent': head_user_agent[random.randrange(0, len(head_user_agent))],
-        #'Cookie': 'ASP.NET_SessionId=qh5rnknn4o1ixayli3chofmw; ValidateToken=d167ec665c2592b00f7e67f68f2f12ac; CurrentSkin=t002; kangle_runat=1'
+        #'Cookie': 'c2wwjin20v3qit0eydpc4ddd; ValidateToken=3b3c233eef1371f7c32ccfede3dfaa31; kangle_runat=1'
     }
     return header
 
@@ -72,50 +72,65 @@ class Amazon(object):
         url.append('&pageSize=')
         url.append(str(self.period_count))
         url.append('&pageIndex=1&startDate=&endDate=&period=&_=')
-        url.append(str(int(time.time())) + '000')
+        url.append(str(int(time.time())) + str(random.randrange(999)).zfill(3))
         return ''.join(url)
 
     def go(self):
-        url = self.generate_url()
-        #print('url: ' + url)
-        response = self.parse_url(url)
-        if response == None:
-            print('parse url error')
-            return
-        self.dirc = eval(response.text)
-        for subDirc in self.dirc['list']:
-            period = subDirc['date']
-            result = subDirc['result']
-            self.result_dirc[period] = result
-            cnt = len(self.result_dirc)
-            if cnt == self.period_count:
-                break
-        self.dig_1.clear()
-        self.dig_2.clear()
-        self.dig_3.clear()
-        self.result.clear()
-        total = []
-        for (period,result) in self.result_dirc.items():
-            dig_1 = result.split(',')[4]
-            dig_2 = result.split(',')[3]
-            dig_3 = result.split(',')[2]
-            self.dig_1.append(int(dig_1))
-            self.dig_2.append(int(dig_2))
-            self.dig_3.append(int(dig_3))
-            total.append(int(dig_1))
-            total.append(int(dig_2))
-            total.append(int(dig_3))
-        #self.dig_1.reverse()
-        #self.dig_2.reverse()
-        #self.dig_3.reverse()
-        print(total)
-        target = collections.Counter(total).most_common(1)[0][0]
-        for i in range(0,10):
-            if i != target:
-                self.result.append(i)
-        print(self.result)
-        return result
+        try:
+            url = self.generate_url()
+            #print('url: ' + url)
+            response = self.parse_url(url)
+            if response == None:
+                print('parse url error')
+                return
+            #print(response.text)
+            self.dirc = eval(response.text)
+            for subDirc in self.dirc['list']:
+                period = subDirc['date']
+                result = subDirc['result']
+                self.result_dirc[period] = result
+                cnt = len(self.result_dirc)
+                if cnt == self.period_count:
+                    break
+
+            self.dig_1.clear()
+            self.dig_2.clear()
+            self.dig_3.clear()
+            self.result.clear()
+            total = []
+
+            for (period,result) in self.result_dirc.items():
+                dig_1 = result.split(',')[4]
+                dig_2 = result.split(',')[3]
+                dig_3 = result.split(',')[2]
+                self.dig_1.append(int(dig_1))
+                self.dig_2.append(int(dig_2))
+                self.dig_3.append(int(dig_3))
+                total.append(int(dig_1))
+                total.append(int(dig_2))
+                total.append(int(dig_3))
+            #self.dig_1.reverse()
+            #self.dig_2.reverse()
+            #self.dig_3.reverse()
+            #print(total)
+            target = collections.Counter(total).most_common(1)[0][0]
+            for i in range(0,10):
+                if i != target:
+                    self.result.append(str(i))
+            #print(str(self.result))
+            return self.result
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+            return None
+
 
 if __name__ == '__main__':
-    count = 5
-    Amazon(count).go()
+    while True:
+        time_wait_1 = random.randint(0, 4) + random.random()
+        time_wait_2 = 5 - time_wait_1
+        print('main time : ' + str(time_wait_1))
+        print('sub time : ' + str(time_wait_2))
+        print(str(random.randrange(999)).zfill(3))
+        time.sleep(2)
+    #count = 5
+    #Amazon(count).go()

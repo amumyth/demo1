@@ -1,10 +1,10 @@
 # -*- coding:UTF-8 -*-
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from main import  Amazon
-import sys, time
+from PyQt5.QtWidgets import QWidget, QLineEdit, QFormLayout, QPushButton, QApplication
+from PyQt5.QtGui import QIntValidator, QFont
+from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from main import Amazon
+import sys, time, random
 
 
 class RunThread(QThread):
@@ -13,19 +13,39 @@ class RunThread(QThread):
     def __init__(self, parent=None):
         super(RunThread, self).__init__()
         self.setObjectName('spider')
+        self.time_wait_1 = 0
+        self.time_wait_2 = 0
 
     def __del__(self):
         self.wait()
 
+    def save_result(self, result):
+        with open('txffc.txt', 'w', encoding='utf-8') as f:
+            f.write(result)
+
     def run(self):
+        #print('run ...')
+        last_res = ''
         while True:
-            restlt = Amazon(5).go()
-            self.trigger.emit(restlt)
-            time.sleep(5)
+            time.sleep(self.time_wait_2)
+            result = Amazon(5).go()
+            result_str = ''
+            if result != None:
+                result_str = " ".join(result)
+            print(result_str)
+            if result_str != '' and result_str != last_res:
+                self.trigger.emit(result_str)
+                self.save_result(result_str)
+                last_res = result_str
+            self.time_wait_1 = random.randint(0,4) + random.random()
+            self.time_wait_2 = 5 - self.time_wait_1
+            time.sleep(self.time_wait_1)
 
 class lineEditDemo(QWidget):
     def __init__(self,parent=None):
         super(lineEditDemo, self).__init__(parent)
+
+        #self.setFixedSize(*(400,100))
 
         #创建文本
         self.e1=QLineEdit()
@@ -35,6 +55,8 @@ class lineEditDemo(QWidget):
         self.e1.setAlignment(Qt.AlignCenter)
         #设置文本的字体和字号大小
         self.e1.setFont(QFont('Arial',20))
+
+        self.e1.setReadOnly(True)
 
         #表单布局
         flo=QFormLayout()
@@ -53,14 +75,17 @@ class lineEditDemo(QWidget):
         self.setWindowTitle("Demo")
 
     def work(self):
-        print('btn clicked')
         self.thread = RunThread()
         self.thread.trigger.connect(self.txtUpdate)
-        self.thread.run()
+        self.thread.start()
 
     def txtUpdate(self, str):
-        print('slot run: ' + str)
+        #print('result: ' + str)
         self.e1.setText(str)
+        #QApplication.processEvents()
+
+    def closeEvent(self, event):
+        sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
